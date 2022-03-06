@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface MemsourceUserRepository extends JpaRepository<MemsourceUser, Long> {
 
-  Optional<MemsourceUser> findMemsourceUserByUserName(String userName);
   Optional<MemsourceUser> findMemsourceUserById(Long userName);
 
 }

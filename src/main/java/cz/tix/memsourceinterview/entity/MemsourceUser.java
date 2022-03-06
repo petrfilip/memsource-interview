@@ -21,4 +21,14 @@ public class MemsourceUser {
   @Column(name = "password")
   private String password;
 
+  /**
+   * Password omitted
+   */
+  @Override
+  public String toString() {
+    return "MemsourceUser{" +
+        "id=" + id +
+        ", userName='" + userName + '\'' +
+        '}';
+  }
 }

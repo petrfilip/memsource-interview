@@ -25,7 +25,7 @@ public class MemsourceUserController {
 
   @PostMapping("users")
   public CreateMemsourceUserDtoOut createUser(@Valid @RequestBody CreateMemsourceUserDtoIn dtoIn) {
-    return memsourceUserService.insertOrUpdate(dtoIn.getUserName(), dtoIn.getPassword());
+    return memsourceUserService.createNewUser(dtoIn.getUserName(), dtoIn.getPassword());
   }
 
 

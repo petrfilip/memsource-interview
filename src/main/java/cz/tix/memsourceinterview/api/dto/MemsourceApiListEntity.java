@@ -3,6 +3,9 @@ package cz.tix.memsourceinterview.api.dto;
 import java.util.List;
 import lombok.Data;
 
+/**
+ * Generic entity for memsource collection entities
+ */
 @Data
 public abstract class MemsourceApiListEntity<T> {
 

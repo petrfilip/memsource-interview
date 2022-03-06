@@ -19,7 +19,12 @@ public class MemsourceUserService {
     this.objectMapper = objectMapper;
   }
 
-  public CreateMemsourceUserDtoOut insertOrUpdate(String username, String password) {
+  /**
+   * Persist memsource credentials to database
+   *
+   * @return persisted memsource credentials
+   */
+  public CreateMemsourceUserDtoOut createNewUser(String username, String password) {
 
     MemsourceUser newUser = new MemsourceUser();
     newUser.setUserName(username);

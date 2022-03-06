@@ -26,6 +26,11 @@ import org.springframework.web.client.RestTemplate;
 @Slf4j
 public class MemsourceApiClient {
 
+  public static final String API_PATH_URI_LOGIN = "/web/api2/v1/auth/login";
+  public static final String API_PATH_URI_LIST_PROJECTS = "/web/api2/v1/projects";
+  private final Map<Long, TokenDto> tokenCache = new HashMap<>();
+
+
   @Value("${memsource.baseUri}")
   private String baseUri;
 
@@ -33,17 +38,21 @@ public class MemsourceApiClient {
   private final MemsourceUserRepository memsourceUserRepository;
   private final ObjectMapper objectMapper;
 
-  private final Map<Long, TokenDto> tokenCache = new HashMap<>();
-
   public MemsourceApiClient(RestTemplate restTemplate, MemsourceUserRepository memsourceUserRepository, ObjectMapper objectMapper) {
     this.restTemplate = restTemplate;
     this.memsourceUserRepository = memsourceUserRepository;
     this.objectMapper = objectMapper;
   }
 
+  /**
+   * API call for gathering of memsource projects
+   *
+   * @param userId user identification
+   * @return list of projects
+   */
   public ListProjectDtoOut listProjects(Long userId) {
     log.info("Retrieving listProjects for userId {}", userId);
-    return callApi(userId, HttpMethod.GET, "/web/api2/v1/projects", null, ListProjectDtoOut.class);
+    return callApi(userId, HttpMethod.GET, API_PATH_URI_LIST_PROJECTS, null, ListProjectDtoOut.class);
   }
 
   /**
@@ -52,23 +61,30 @@ public class MemsourceApiClient {
    * @param userId user identification
    * @return token
    */
-  public String retrieveToken(Long userId) {
+  public String retrieveAndCacheToken(Long userId) {
     TokenDto cachedToken = tokenCache.get(userId);
     if (cachedToken != null && cachedToken.getExpires().isAfter(ZonedDateTime.now())) {
       log.debug("Token for user {} retrieved from cache ", userId);
       return cachedToken.getToken();
     }
 
-    MemsourceUser memsourceUser = memsourceUserRepository.findMemsourceUserById(userId)
-        .orElseThrow(() -> new IllegalStateException("Unable to find user"));
+    MemsourceUser memsourceUser = getMemsourceUser(userId);
 
     TokenDto obtainedToken = obtainNewTokenFromApi(memsourceUser);
     tokenCache.put(userId, obtainedToken);
     return obtainedToken.getToken();
   }
 
+  private MemsourceUser getMemsourceUser(Long userId) {
+    MemsourceUser memsourceUser = memsourceUserRepository.findMemsourceUserById(userId).orElse(null); // this is because nestedServletException
+    if (memsourceUser == null) { // this is because nestedServletException
+      throw new MemsourceApiException(String.format("Unable to find user with id %s", userId));
+    }
+    return memsourceUser;
+  }
+
   private TokenDto obtainNewTokenFromApi(MemsourceUser memsourceUser) {
-    String authUri = baseUri + "/web/api2/v1/auth/login";
+    String authUri = baseUri + API_PATH_URI_LOGIN;
 
     TokenRequestDto tokenRequestDto = objectMapper.convertValue(memsourceUser, TokenRequestDto.class);
     ResponseEntity<TokenDto> tokenResponse = requestApiToken(authUri, tokenRequestDto);
@@ -94,10 +110,13 @@ public class MemsourceApiClient {
         && tokenDto.getExpires() != null && tokenDto.getExpires().isAfter(ZonedDateTime.now());
   }
 
+  /**
+   * Generic mem source api client call.
+   */
   private <T> T callApi(Long userId, HttpMethod httpMethod, String pathUri, Object dtoIn, Class<T> outputClass) {
     String targetUri = baseUri + pathUri;
 
-    String token = retrieveToken(userId);
+    String token = retrieveAndCacheToken(userId);
 
     HttpHeaders headers = new HttpHeaders();
     headers.setAccept(List.of(MediaType.APPLICATION_JSON));

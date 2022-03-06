@@ -85,6 +85,7 @@ Response body
 ### Development information
 
 - backend without tests: 2.5 hours
+- backend tests: 2 hours
 - frontend without tests: 3 hours (first time with VueJs)
 
 # Assignment

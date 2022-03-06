@@ -25,12 +25,70 @@ npm install
 npm run dev
 ```
 
+# API
+
+## POST /v1/memsource/users
+
+Request body
+
+```json
+{
+  "userName": "your@email.com",
+  "password": "p@ssw0rd"
+}
+```
+
+Response body
+
+```json
+{
+  "id": 46,
+  "userName": "your@email.com"
+}
+```
+
+## POST /v1/memsource/projects
+
+No response body
+
+Request header
+
+```json
+X-userId: 46
+```
+
+Response body
+
+```json
+{
+  "content": [
+    {
+      "name": "Another item",
+      "status": "NEW",
+      "sourceLang": "zu",
+      "targetLangs": [
+        "gux",
+        "kl",
+        "kl_gl",
+        ...
+      ]
+    },
+    ...
+  ],
+  "totalElements": 3,
+  "totalPages": 1,
+  "pageNumber": 0,
+  "numberOfElements": 3
+}
+```
 
 ### Development information
+
 - backend without tests: 2.5 hours
 - frontend without tests: 3 hours (first time with VueJs)
 
 # Assignment
+
 - Create Spring Boot application.
 - The application will have 2 pages.
 
